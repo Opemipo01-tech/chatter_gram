@@ -1,5 +1,8 @@
 import App from "../App.jsx";
 import Register from "../pages/Register.jsx";
+import Login from "../pages/Login.jsx";
+import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import Home from "../pages/Home.jsx";
 
 const routes = [
   {
@@ -7,12 +10,24 @@ const routes = [
     element: <App />,
     children: [
       {
-        index: true,
-        element: <Register/>,
+        path: "register",
+        element: <Register />,
       },
+
       {
         path: "login",
-        element: <Register />,
+        element: <Login />,
+      },
+
+      // Everything inside this route is protected
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            index: true,
+            element: <Home />,
+          },
+        ],
       },
     ],
   },
