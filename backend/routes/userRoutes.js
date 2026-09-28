@@ -1,13 +1,9 @@
-import express from "express";
+import Router from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
+import { getCurrentUser } from "../controller/userController.js";
 
-const router = express.Router();
+const userRoute = Router();
 
-router.get("/me", authenticateToken, async (req, res) => {
-  res.json({
-    message: "You are authenticated.",
-    userId: req.user.id,
-  });
-});
+userRoute.get("/me",authenticateToken,getCurrentUser);
 
-export default router;
+export default userRoute;
