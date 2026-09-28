@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+
+  firstName String?
+  lastName  String?
+  bio       String?
+  avatarUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Posts created by this user
+  posts     Post[]
+
+  // Comments made by this user
+  comments  Comment[]
+
+  // Likes made by this user
+  likes     Like[]
+
+  // People this user follows
+  following Follow[] @relation("Following")
+
+  // People following this user
+  followers Follow[] @relation("Followers")
+}
+
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  content   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Author
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Post interactions
+  comments  Comment[]
+  likes     Like[]
+}
+
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Comment author
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Commented post
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+
+model Like {
+  id        Int      @id @default(autoincrement())
+
+  createdAt DateTime @default(now())
+
+  // User who liked the post
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Post that was liked
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // A user can only like a particular post once
+  @@unique([userId, postId])
+}
+
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+
+  createdAt   DateTime @default(now())
+
+  // Person doing the following
+  followerId  Int
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  // Person being followed
+  followingId Int
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate follows
+  @@unique([followerId, followingId])
+}
