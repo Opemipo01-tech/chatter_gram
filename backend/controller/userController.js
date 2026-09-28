@@ -35,3 +35,31 @@ export async function getCurrentUser(req, res) {
     });
   }
 }
+
+export async function getAllUsers(req, res) {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+      },
+      orderBy: {
+        username: "asc",
+      },
+    });
+
+    return res.status(200).json({
+      users,
+      currentUserId: req.user.id,
+    });
+  } catch (error) {
+    console.error("Get all users error:", error);
+
+    return res.status(500).json({
+      message: "Something went wrong while retrieving users.",
+    });
+  }
+}

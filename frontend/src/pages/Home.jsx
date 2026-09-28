@@ -1,4 +1,4 @@
-import { useOutletContext,useNavigate } from "react-router";
+import { useOutletContext,useNavigate,Link } from "react-router";
 
 function Home() {
   const { user } = useOutletContext();
@@ -20,6 +20,10 @@ function Home() {
       <p>
         @{user.username}
       </p>
+
+      <Link to={"/users"}>
+      view people
+      </Link>
 
       <button onClick={handleLogout}> Logout </button>
     </div>

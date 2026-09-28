@@ -3,6 +3,7 @@ import Register from "../pages/Register.jsx";
 import Login from "../pages/Login.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import Home from "../pages/Home.jsx";
+import Users from "../pages/Users.jsx";
 
 const routes = [
   {
@@ -29,6 +30,10 @@ const routes = [
           },
         ],
       },
+      {
+        path:"users",
+        element:<Users/>,
+      }
     ],
   },
 ];
