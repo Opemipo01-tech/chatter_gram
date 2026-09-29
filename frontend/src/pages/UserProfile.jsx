@@ -1,14 +1,30 @@
 import { useEffect, useState } from "react";
-import { Link, useOutletContext, useParams } from "react-router";
-import { getUserById } from "../services/userApi.js";
+import {
+  Link,
+  useOutletContext,
+  useParams,
+} from "react-router";
+
+import {
+  getUserById,
+  followUser,
+} from "../services/userApi.js";
 
 function UserProfile() {
   const { id } = useParams();
-  const { user: currentUser } = useOutletContext();
+
+  const { user: currentUser } =
+    useOutletContext();
 
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] =
+    useState(true);
+
   const [error, setError] = useState("");
+
+  const [followLoading, setFollowLoading] =
+    useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -21,7 +37,10 @@ function UserProfile() {
       }
 
       try {
-        const data = await getUserById(token, id);
+        const data = await getUserById(
+          token,
+          id
+        );
 
         setUser(data);
       } catch (error) {
@@ -34,11 +53,41 @@ function UserProfile() {
     loadUser();
   }, [id]);
 
+  async function handleFollow() {
+    const token = localStorage.getItem("token");
+
+    if (!token || !user) {
+      return;
+    }
+
+    try {
+      setFollowLoading(true);
+      setError("");
+
+      const data = await followUser(
+        token,
+        user.id
+      );
+
+setUser((previousUser) => ({
+  ...previousUser,
+
+  isFollowing: data.isFollowing,
+
+  followersCount: data.followersCount,
+}));
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setFollowLoading(false);
+    }
+  }
+
   if (loading) {
     return <p>Loading profile...</p>;
   }
 
-  if (error) {
+  if (error && !user) {
     return (
       <main>
         <p>{error}</p>
@@ -50,7 +99,8 @@ function UserProfile() {
     );
   }
 
-  const isCurrentUser = currentUser.id === user.id;
+  const isCurrentUser =
+    currentUser.id === user.id;
 
   return (
     <main>
@@ -69,11 +119,55 @@ function UserProfile() {
           {user.bio || "No bio yet."}
         </p>
 
-        {isCurrentUser && (
-          <Link to="/edit-profile">
-            Edit Profile
+        <div>
+          <Link
+            to={`/users/${user.id}/followers`}
+          >
+            <strong>
+              {user.followersCount}
+            </strong>{" "}
+            Followers
           </Link>
+
+          {" | "}
+
+          <Link
+            to={`/users/${user.id}/following`}
+          >
+            <strong>
+              {user.followingCount}
+            </strong>{" "}
+            Following
+          </Link>
+        </div>
+
+        {!isCurrentUser && (
+          <div>
+            <button
+              type="button"
+              onClick={handleFollow}
+              disabled={followLoading}
+            >
+              {followLoading
+                ? "Loading..."
+                : user.isFollowing
+                ? "Following"
+                : user.isFollowingMe
+                ? "Follow Back"
+                : "Follow"}
+            </button>
+          </div>
         )}
+
+        {isCurrentUser && (
+          <div>
+            <Link to="/edit-profile">
+              Edit Profile
+            </Link>
+          </div>
+        )}
+
+        {error && <p>{error}</p>}
       </section>
 
       <section>

@@ -149,3 +149,57 @@ export async function getFollowRequests(token) {
 
   return data;
 }
+
+export async function getFollowers(token, userId) {
+  const response = await fetch(
+    `${API_URL}/users/${userId}/followers`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message ||
+        "Failed to get followers."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data;
+}
+
+export async function getFollowing(token, userId) {
+  const response = await fetch(
+    `${API_URL}/users/${userId}/following`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message ||
+        "Failed to get following."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data;
+}

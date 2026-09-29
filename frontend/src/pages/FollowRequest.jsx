@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 
 import {
   getFollowRequests,
@@ -41,8 +40,6 @@ function FollowRequests() {
     try {
       await followUser(token, userId);
 
-      // Remove the person from the list
-      // because we now follow them back.
       setUsers((previousUsers) =>
         previousUsers.filter(
           (user) => user.id !== userId
@@ -65,23 +62,19 @@ function FollowRequests() {
     <main>
       <h1>Follow Requests</h1>
 
-      <Link to="/users">
-        Back to People
-      </Link>
-
       {users.length === 0 ? (
         <p>No follow requests.</p>
       ) : (
         <ul>
           {users.map((user) => (
             <li key={user.id}>
-              <Link to={`/users/${user.id}`}>
+              <a href={`/users/${user.id}`}>
                 <h2>
                   {user.firstName} {user.lastName}
                 </h2>
 
                 <p>@{user.username}</p>
-              </Link>
+              </a>
 
               <button
                 type="button"

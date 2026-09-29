@@ -103,6 +103,7 @@ export async function getAllUsers(req, res) {
 export async function getUserById(req, res) {
   try {
     const userId = Number(req.params.id);
+    const currentUserId = req.user.id;
 
     if (Number.isNaN(userId)) {
       return res.status(400).json({
@@ -114,6 +115,7 @@ export async function getUserById(req, res) {
       where: {
         id: userId,
       },
+
       select: {
         id: true,
         username: true,
@@ -122,10 +124,12 @@ export async function getUserById(req, res) {
         bio: true,
         avatarUrl: true,
         createdAt: true,
+
         posts: {
           orderBy: {
             createdAt: "desc",
           },
+
           select: {
             id: true,
             content: true,
@@ -142,14 +146,61 @@ export async function getUserById(req, res) {
       });
     }
 
+    // How many people follow this user?
+    const followersCount = await prisma.follow.count({
+      where: {
+        followingId: userId,
+      },
+    });
+
+    // How many people does this user follow?
+    const followingCount = await prisma.follow.count({
+      where: {
+        followerId: userId,
+      },
+    });
+
+    // Does the logged-in user follow this profile?
+    const existingFollow = await prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: currentUserId,
+          followingId: userId,
+        },
+      },
+    });
+
+    // Does this profile follow the logged-in user?
+    const followsCurrentUser =
+      await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId: userId,
+            followingId: currentUserId,
+          },
+        },
+      });
+
     return res.status(200).json({
-      user,
+      user: {
+        ...user,
+
+        followersCount,
+        followingCount,
+
+        isFollowing: Boolean(existingFollow),
+
+        isFollowingMe: Boolean(
+          followsCurrentUser
+        ),
+      },
     });
   } catch (error) {
     console.error("Get user by ID error:", error);
 
     return res.status(500).json({
-      message: "Something went wrong while retrieving this user.",
+      message:
+        "Something went wrong while retrieving this user.",
     });
   }
 }
@@ -250,6 +301,140 @@ export async function updateMyProfile(req, res) {
 
     return res.status(500).json({
       message: "Something went wrong while updating your profile.",
+    });
+  }
+}
+
+export async function getFollowers(req, res) {
+  try {
+    const userId = Number(req.params.id);
+
+    if (Number.isNaN(userId)) {
+      return res.status(400).json({
+        message: "Invalid user ID.",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+
+      select: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+
+    const followers = await prisma.follow.findMany({
+      where: {
+        followingId: userId,
+      },
+
+      select: {
+        id: true,
+
+        follower: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const formattedFollowers = followers.map(
+      (follow) => follow.follower
+    );
+
+    return res.status(200).json({
+      users: formattedFollowers,
+    });
+  } catch (error) {
+    console.error("Get followers error:", error);
+
+    return res.status(500).json({
+      message:
+        "Something went wrong while retrieving followers.",
+    });
+  }
+}
+
+export async function getFollowing(req, res) {
+  try {
+    const userId = Number(req.params.id);
+
+    if (Number.isNaN(userId)) {
+      return res.status(400).json({
+        message: "Invalid user ID.",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+
+      select: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found.",
+      });
+    }
+
+    const following = await prisma.follow.findMany({
+      where: {
+        followerId: userId,
+      },
+
+      select: {
+        id: true,
+
+        following: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const formattedFollowing = following.map(
+      (follow) => follow.following
+    );
+
+    return res.status(200).json({
+      users: formattedFollowing,
+    });
+  } catch (error) {
+    console.error("Get following error:", error);
+
+    return res.status(500).json({
+      message:
+        "Something went wrong while retrieving following.",
     });
   }
 }

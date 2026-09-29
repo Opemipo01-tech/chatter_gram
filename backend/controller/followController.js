@@ -21,6 +21,7 @@ export async function followUser(req, res) {
       where: {
         id: followingId,
       },
+
       select: {
         id: true,
       },
@@ -32,16 +33,17 @@ export async function followUser(req, res) {
       });
     }
 
-    const existingFollow = await prisma.follow.findUnique({
-      where: {
-        followerId_followingId: {
-          followerId,
-          followingId,
+    const existingFollow =
+      await prisma.follow.findUnique({
+        where: {
+          followerId_followingId: {
+            followerId,
+            followingId,
+          },
         },
-      },
-    });
+      });
 
-    // If already following, unfollow
+    // Unfollow
     if (existingFollow) {
       await prisma.follow.delete({
         where: {
@@ -49,13 +51,30 @@ export async function followUser(req, res) {
         },
       });
 
+      const followersCount =
+        await prisma.follow.count({
+          where: {
+            followingId,
+          },
+        });
+
+      const followingCount =
+        await prisma.follow.count({
+          where: {
+            followerId,
+          },
+        });
+
       return res.status(200).json({
-        message: "User unfollowed successfully.",
+        message:
+          "User unfollowed successfully.",
         isFollowing: false,
+        followersCount,
+        followingCount,
       });
     }
 
-    // Otherwise, follow
+    // Follow
     await prisma.follow.create({
       data: {
         followerId,
@@ -63,12 +82,31 @@ export async function followUser(req, res) {
       },
     });
 
+    const followersCount =
+      await prisma.follow.count({
+        where: {
+          followingId,
+        },
+      });
+
+    const followingCount =
+      await prisma.follow.count({
+        where: {
+          followerId,
+        },
+      });
+
     return res.status(201).json({
       message: "User followed successfully.",
       isFollowing: true,
+      followersCount,
+      followingCount,
     });
   } catch (error) {
-    console.error("Follow/unfollow user error:", error);
+    console.error(
+      "Follow/unfollow user error:",
+      error
+    );
 
     return res.status(500).json({
       message:
@@ -81,29 +119,16 @@ export async function getFollowRequests(req, res) {
   try {
     const currentUserId = req.user.id;
 
-    /*
-      We want people who:
-
-      1. Follow the logged-in user
-      2. The logged-in user does NOT follow back
-
-      Example:
-
-      Musa -> Ahmad
-
-      Ahmad -> Musa does not exist
-
-      Therefore Musa appears here.
-    */
-
     const followRequests = await prisma.follow.findMany({
       where: {
+        // Someone follows the logged-in user
         followingId: currentUserId,
 
+        // But the logged-in user does NOT follow them back
         follower: {
           following: {
             none: {
-              followerId: currentUserId,
+              followingId: currentUserId,
             },
           },
         },
