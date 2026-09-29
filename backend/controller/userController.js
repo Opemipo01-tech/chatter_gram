@@ -117,3 +117,103 @@ export async function getUserById(req, res) {
     });
   }
 }
+
+export async function updateMyProfile(req, res) {
+  try {
+    const { firstName, lastName, username, bio } = req.body;
+
+    const data = {};
+
+    if (firstName !== undefined) {
+      data.firstName = firstName.trim();
+    }
+
+    if (lastName !== undefined) {
+      data.lastName = lastName.trim();
+    }
+
+    if (username !== undefined) {
+      data.username = username.trim();
+    }
+
+    if (bio !== undefined) {
+      data.bio = bio.trim();
+    }
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({
+        message: "No profile information was provided.",
+      });
+    }
+
+    if (data.firstName !== undefined && data.firstName.length === 0) {
+      return res.status(400).json({
+        message: "First name cannot be empty.",
+      });
+    }
+
+    if (data.lastName !== undefined && data.lastName.length === 0) {
+      return res.status(400).json({
+        message: "Last name cannot be empty.",
+      });
+    }
+
+    if (data.username !== undefined) {
+      if (data.username.length < 3 || data.username.length > 30) {
+        return res.status(400).json({
+          message: "Username must be between 3 and 30 characters.",
+        });
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(data.username)) {
+        return res.status(400).json({
+          message:
+            "Username can only contain letters, numbers, and underscores.",
+        });
+      }
+
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          username: data.username,
+          NOT: {
+            id: req.user.id,
+          },
+        },
+      });
+
+      if (existingUser) {
+        return res.status(409).json({
+          message: "Username is already taken.",
+        });
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: {
+        id: req.user.id,
+      },
+      data,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        bio: true,
+        avatarUrl: true,
+        createdAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Profile updated successfully.",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+
+    return res.status(500).json({
+      message: "Something went wrong while updating your profile.",
+    });
+  }
+}

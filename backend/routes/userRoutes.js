@@ -1,10 +1,11 @@
 import Router from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
-import { getCurrentUser,getAllUsers,getUserById } from "../controller/userController.js";
+import { getCurrentUser,getAllUsers,getUserById,updateMyProfile } from "../controller/userController.js";
 
 const userRoute = Router();
 
 userRoute.get("/me",authenticateToken,getCurrentUser);
+userRoute.patch("/me",authenticateToken,updateMyProfile);
 userRoute.get("/",authenticateToken,getAllUsers)
 userRoute.get("/:id",authenticateToken,getUserById)
 

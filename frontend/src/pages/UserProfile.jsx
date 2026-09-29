@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useOutletContext, useParams } from "react-router";
 import { getUserById } from "../services/userApi.js";
 
 function UserProfile() {
   const { id } = useParams();
+  const { user: currentUser } = useOutletContext();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,10 +42,15 @@ function UserProfile() {
     return (
       <main>
         <p>{error}</p>
-        <Link to="/users">Back to People</Link>
+
+        <Link to="/users">
+          Back to People
+        </Link>
       </main>
     );
   }
+
+  const isCurrentUser = currentUser.id === user.id;
 
   return (
     <main>
@@ -62,13 +68,21 @@ function UserProfile() {
         <p>
           {user.bio || "No bio yet."}
         </p>
+
+        {isCurrentUser && (
+          <Link to="/edit-profile">
+            Edit Profile
+          </Link>
+        )}
       </section>
 
       <section>
         <h2>Posts</h2>
 
         {user.posts.length === 0 ? (
-          <p>This user hasn't posted anything yet.</p>
+          <p>
+            This user hasn't posted anything yet.
+          </p>
         ) : (
           <div>
             {user.posts.map((post) => (

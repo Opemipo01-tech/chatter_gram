@@ -37,6 +37,15 @@ function ProtectedRoute() {
     verifyUser();
   }, []);
 
+  function updateUser(updatedUser) {
+    setUser(updatedUser);
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(updatedUser)
+    );
+  }
+
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -45,7 +54,14 @@ function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet context={{ user }} />;
+  return (
+    <Outlet
+      context={{
+        user,
+        updateUser,
+      }}
+    />
+  );
 }
 
 export default ProtectedRoute;
