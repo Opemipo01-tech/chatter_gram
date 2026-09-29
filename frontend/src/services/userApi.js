@@ -45,3 +45,29 @@ export async function getAllUsers(token) {
 
   return data;
 }
+
+export async function getUserById(token, userId) {
+  const response = await fetch(
+    `${API_URL}/users/${userId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message || "Failed to get user profile."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data.user;
+}

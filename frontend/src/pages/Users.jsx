@@ -54,19 +54,20 @@ function Users() {
       ) : (
         <ul>
           {users.map((user) => {
-            const isCurrentUser = user.id === currentUserId;
+            const isCurrentUser =
+              user.id === currentUserId;
 
             return (
               <li key={user.id}>
-                <h2>
-                  {user.firstName} {user.lastName}
+                <Link to={`/users/${user.id}`}>
+                  <h2>
+                    {user.firstName} {user.lastName}
 
-                  {isCurrentUser && (
-                    <span> (You)</span>
-                  )}
-                </h2>
+                    {isCurrentUser && " (You)"}
+                  </h2>
 
-                <p>@{user.username}</p>
+                  <p>@{user.username}</p>
+                </Link>
               </li>
             );
           })}
