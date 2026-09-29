@@ -96,3 +96,29 @@ export async function updateMyProfile(token, profileData) {
 
   return data;
 }
+
+export async function followUser(token, userId) {
+  const response = await fetch(
+    `${API_URL}/follows/${userId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message || "Failed to follow user."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data;
+}

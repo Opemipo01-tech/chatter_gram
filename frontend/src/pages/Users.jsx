@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { getAllUsers } from "../services/userApi.js";
+import {
+  getAllUsers,
+  followUser,
+} from "../services/userApi.js";
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -32,6 +35,27 @@ function Users() {
 
     loadUsers();
   }, []);
+
+async function handleFollow(userId) {
+  const token = localStorage.getItem("token");
+
+  try {
+    const data = await followUser(token, userId);
+
+    setUsers((previousUsers) =>
+      previousUsers.map((user) =>
+        user.id === userId
+          ? {
+              ...user,
+              isFollowing: data.isFollowing,
+            }
+          : user
+      )
+    );
+  } catch (error) {
+    setError(error.message);
+  }
+} 
 
   if (loading) {
     return <p>Loading users...</p>;
@@ -68,6 +92,17 @@ function Users() {
 
                   <p>@{user.username}</p>
                 </Link>
+
+                {!isCurrentUser && (
+                  <button
+                    type="button"
+                    onClick={() => handleFollow(user.id)}
+                  >
+                    {user.isFollowing
+                      ? "Following"
+                      : "Follow"}
+                  </button>
+                )}
               </li>
             );
           })}

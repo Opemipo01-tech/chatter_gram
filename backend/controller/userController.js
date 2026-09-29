@@ -45,14 +45,31 @@ export async function getAllUsers(req, res) {
         firstName: true,
         lastName: true,
         avatarUrl: true,
+        followers: {
+          where: {
+            followerId: req.user.id,
+          },
+          select: {
+            id: true,
+          },
+        },
       },
       orderBy: {
         username: "asc",
       },
     });
 
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatarUrl: user.avatarUrl,
+      isFollowing: user.followers.length > 0,
+    }));
+
     return res.status(200).json({
-      users,
+      users: formattedUsers,
       currentUserId: req.user.id,
     });
   } catch (error) {
