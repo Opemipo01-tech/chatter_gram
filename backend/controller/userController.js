@@ -38,6 +38,8 @@ export async function getCurrentUser(req, res) {
 
 export async function getAllUsers(req, res) {
   try {
+    const currentUserId = req.user.id;
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -45,15 +47,28 @@ export async function getAllUsers(req, res) {
         firstName: true,
         lastName: true,
         avatarUrl: true,
+
+        // Does the logged-in user follow this person?
         followers: {
           where: {
-            followerId: req.user.id,
+            followerId: currentUserId,
+          },
+          select: {
+            id: true,
+          },
+        },
+
+        // Does this person follow the logged-in user?
+        following: {
+          where: {
+            followingId: currentUserId,
           },
           select: {
             id: true,
           },
         },
       },
+
       orderBy: {
         username: "asc",
       },
@@ -65,18 +80,22 @@ export async function getAllUsers(req, res) {
       firstName: user.firstName,
       lastName: user.lastName,
       avatarUrl: user.avatarUrl,
+
       isFollowing: user.followers.length > 0,
+
+      isFollowingMe: user.following.length > 0,
     }));
 
     return res.status(200).json({
       users: formattedUsers,
-      currentUserId: req.user.id,
+      currentUserId,
     });
   } catch (error) {
     console.error("Get all users error:", error);
 
     return res.status(500).json({
-      message: "Something went wrong while retrieving users.",
+      message:
+        "Something went wrong while retrieving users.",
     });
   }
 }

@@ -122,3 +122,30 @@ export async function followUser(token, userId) {
 
   return data;
 }
+
+export async function getFollowRequests(token) {
+  const response = await fetch(
+    `${API_URL}/follows/follow-requests`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message ||
+        "Failed to get follow requests."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data;
+}

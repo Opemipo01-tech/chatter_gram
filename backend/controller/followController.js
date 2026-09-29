@@ -71,7 +71,81 @@ export async function followUser(req, res) {
     console.error("Follow/unfollow user error:", error);
 
     return res.status(500).json({
-      message: "Something went wrong while following or unfollowing this user.",
+      message:
+        "Something went wrong while following or unfollowing this user.",
+    });
+  }
+}
+
+export async function getFollowRequests(req, res) {
+  try {
+    const currentUserId = req.user.id;
+
+    /*
+      We want people who:
+
+      1. Follow the logged-in user
+      2. The logged-in user does NOT follow back
+
+      Example:
+
+      Musa -> Ahmad
+
+      Ahmad -> Musa does not exist
+
+      Therefore Musa appears here.
+    */
+
+    const followRequests = await prisma.follow.findMany({
+      where: {
+        followingId: currentUserId,
+
+        follower: {
+          following: {
+            none: {
+              followerId: currentUserId,
+            },
+          },
+        },
+      },
+
+      select: {
+        id: true,
+
+        follower: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const users = followRequests.map((follow) => ({
+      followId: follow.id,
+      id: follow.follower.id,
+      username: follow.follower.username,
+      firstName: follow.follower.firstName,
+      lastName: follow.follower.lastName,
+      avatarUrl: follow.follower.avatarUrl,
+    }));
+
+    return res.status(200).json({
+      users,
+    });
+  } catch (error) {
+    console.error("Get follow requests error:", error);
+
+    return res.status(500).json({
+      message:
+        "Something went wrong while retrieving follow requests.",
     });
   }
 }

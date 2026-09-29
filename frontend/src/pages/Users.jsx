@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+
 import {
   getAllUsers,
   followUser,
@@ -7,7 +8,9 @@ import {
 
 function Users() {
   const [users, setUsers] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUserId, setCurrentUserId] =
+    useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -16,7 +19,9 @@ function Users() {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        setError("You must be logged in to view users.");
+        setError(
+          "You must be logged in to view users."
+        );
         setLoading(false);
         return;
       }
@@ -36,26 +41,26 @@ function Users() {
     loadUsers();
   }, []);
 
-async function handleFollow(userId) {
-  const token = localStorage.getItem("token");
+  async function handleFollow(userId) {
+    const token = localStorage.getItem("token");
 
-  try {
-    const data = await followUser(token, userId);
+    try {
+      const data = await followUser(token, userId);
 
-    setUsers((previousUsers) =>
-      previousUsers.map((user) =>
-        user.id === userId
-          ? {
-              ...user,
-              isFollowing: data.isFollowing,
-            }
-          : user
-      )
-    );
-  } catch (error) {
-    setError(error.message);
+      setUsers((previousUsers) =>
+        previousUsers.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                isFollowing: data.isFollowing,
+              }
+            : user
+        )
+      );
+    } catch (error) {
+      setError(error.message);
+    }
   }
-} 
 
   if (loading) {
     return <p>Loading users...</p>;
@@ -71,6 +76,10 @@ async function handleFollow(userId) {
 
       <Link to="/">
         Back to Home
+      </Link>
+
+      <Link to="/follow-requests">
+        Follow Requests
       </Link>
 
       {users.length === 0 ? (
@@ -96,10 +105,14 @@ async function handleFollow(userId) {
                 {!isCurrentUser && (
                   <button
                     type="button"
-                    onClick={() => handleFollow(user.id)}
+                    onClick={() =>
+                      handleFollow(user.id)
+                    }
                   >
                     {user.isFollowing
                       ? "Following"
+                      : user.isFollowingMe
+                      ? "Follow Back"
                       : "Follow"}
                   </button>
                 )}

@@ -6,6 +6,7 @@ import Users from "../pages/Users.jsx";
 import UserProfile from "../pages/UserProfile.jsx";
 import EditProfile from "../pages/EditProfile.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
+import FollowRequests from "../pages/FollowRequest.jsx";
 
 const routes = [
   {
@@ -39,6 +40,10 @@ const routes = [
             path: "edit-profile",
             element: <EditProfile />,
           },
+          {
+            path:"follow-requests",
+            element:<FollowRequests/>,
+          }
         ],
       },
     ],
