@@ -144,3 +144,29 @@ export async function deleteComment(
 
   return data;
 }
+
+export async function toggleLike(token, postId) {
+  const response = await fetch(
+    `${API_URL}/posts/${postId}/like`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message || "Failed to like or unlike post."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data;
+}
