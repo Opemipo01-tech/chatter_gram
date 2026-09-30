@@ -12,6 +12,7 @@ import FollowRequests from "../pages/FollowRequest.jsx";
 
 import ProtectedRoute from "../components/ProtectedRoute.jsx";
 import AuthenticatedLayout from "../components/AuthenticatedLayout.jsx";
+import PostDetails from "../pages/postDetails.jsx";
 
 const routes = [
   {
@@ -60,6 +61,10 @@ const routes = [
               {
                 path: "users/:id/following",
                 element: <Following />,
+              },
+              {
+                path:"posts/:id",
+                element:<PostDetails/>
               },
 
               {

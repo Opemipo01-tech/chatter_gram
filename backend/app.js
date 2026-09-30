@@ -3,6 +3,7 @@ import cors from "cors"
 import authRouter from "./routes/authRoutes.js";
 import userRoute from "./routes/userRoutes.js";
 import followRouter from "./routes/followRoutes.js";
+import postRouter from "./routes/postRoutes.js";
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use(cors())
 app.use("/api/auth",authRouter);
 app.use("/api/users",userRoute);
 app.use("/api/follows",followRouter);
+app.use("/api/posts",postRouter);
+
 
 
 const PORT = 3000;

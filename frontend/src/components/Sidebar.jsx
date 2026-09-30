@@ -1,7 +1,21 @@
-import { NavLink, useOutletContext } from "react-router";
+import {
+  NavLink,
+  useNavigate,
+  useOutletContext,
+} from "react-router";
 
 function Sidebar() {
   const { user } = useOutletContext();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login", {
+      replace: true,
+    });
+  }
 
   return (
     <aside className="sidebar">
@@ -25,7 +39,18 @@ function Sidebar() {
         <NavLink to={`/users/${user.id}`}>
           My Profile
         </NavLink>
+
+        {/* <NavLink to="/edit-profile">
+          Edit Profile
+        </NavLink> */}
       </nav>
+
+      <button
+        type="button"
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
     </aside>
   );
 }
