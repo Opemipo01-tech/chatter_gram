@@ -1,14 +1,29 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useOutletContext, useParams } from "react-router";
 
-import { getPostById } from "../services/postApi.js";
+import {
+  getPostById,
+  createComment,
+  deleteComment,
+} from "../services/postApi.js";
 
 function PostDetails() {
   const { id } = useParams();
+  const { user } = useOutletContext();
 
   const [post, setPost] = useState(null);
+  const [commentContent, setCommentContent] = useState("");
+
   const [loading, setLoading] = useState(true);
+  const [commentLoading, setCommentLoading] =
+    useState(false);
+
+  const [deletingCommentId, setDeletingCommentId] =
+    useState(null);
+
   const [error, setError] = useState("");
+  const [commentError, setCommentError] =
+    useState("");
 
   useEffect(() => {
     async function loadPost() {
@@ -34,6 +49,88 @@ function PostDetails() {
     loadPost();
   }, [id]);
 
+  async function handleCreateComment(event) {
+    event.preventDefault();
+
+    const trimmedContent =
+      commentContent.trim();
+
+    if (!trimmedContent) {
+      setCommentError(
+        "Comment content is required."
+      );
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setCommentError(
+        "You must be logged in to comment."
+      );
+      return;
+    }
+
+    try {
+      setCommentLoading(true);
+      setCommentError("");
+
+      const data = await createComment(
+        token,
+        id,
+        trimmedContent
+      );
+
+      setPost((previousPost) => ({
+        ...previousPost,
+        comments: [
+          ...previousPost.comments,
+          data.comment,
+        ],
+      }));
+
+      setCommentContent("");
+    } catch (error) {
+      setCommentError(error.message);
+    } finally {
+      setCommentLoading(false);
+    }
+  }
+
+  async function handleDeleteComment(commentId) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setCommentError(
+        "You must be logged in."
+      );
+      return;
+    }
+
+    try {
+      setDeletingCommentId(commentId);
+      setCommentError("");
+
+      await deleteComment(
+        token,
+        commentId
+      );
+
+      setPost((previousPost) => ({
+        ...previousPost,
+        comments:
+          previousPost.comments.filter(
+            (comment) =>
+              comment.id !== commentId
+          ),
+      }));
+    } catch (error) {
+      setCommentError(error.message);
+    } finally {
+      setDeletingCommentId(null);
+    }
+  }
+
   if (loading) {
     return <p>Loading post...</p>;
   }
@@ -53,7 +150,9 @@ function PostDetails() {
 
       <article>
         <header>
-          <Link to={`/users/${post.author.id}`}>
+          <Link
+            to={`/users/${post.author.id}`}
+          >
             <strong>
               {post.author.firstName}{" "}
               {post.author.lastName}
@@ -74,30 +173,90 @@ function PostDetails() {
         <section>
           <h2>Comments</h2>
 
+          <form
+            onSubmit={handleCreateComment}
+          >
+            <textarea
+              value={commentContent}
+              onChange={(event) =>
+                setCommentContent(
+                  event.target.value
+                )
+              }
+              placeholder="Write a comment..."
+              rows="4"
+              disabled={commentLoading}
+            />
+
+            {commentError && (
+              <p>{commentError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={commentLoading}
+            >
+              {commentLoading
+                ? "Commenting..."
+                : "Comment"}
+            </button>
+          </form>
+
           {post.comments.length === 0 ? (
             <p>No comments yet.</p>
           ) : (
             <ul>
-              {post.comments.map((comment) => (
-                <li key={comment.id}>
-                  <Link
-                    to={`/users/${comment.author.id}`}
-                  >
-                    <strong>
-                      {comment.author.firstName}{" "}
-                      {comment.author.lastName}
-                    </strong>
-                  </Link>
+              {post.comments.map(
+                (comment) => (
+                  <li key={comment.id}>
+                    <Link
+                      to={`/users/${comment.author.id}`}
+                    >
+                      <strong>
+                        {
+                          comment.author
+                            .firstName
+                        }{" "}
+                        {
+                          comment.author
+                            .lastName
+                        }
+                      </strong>
+                    </Link>
 
-                  <p>{comment.content}</p>
+                    <p>
+                      {comment.content}
+                    </p>
 
-                  <small>
-                    {new Date(
-                      comment.createdAt
-                    ).toLocaleString()}
-                  </small>
-                </li>
-              ))}
+                    <small>
+                      {new Date(
+                        comment.createdAt
+                      ).toLocaleString()}
+                    </small>
+
+                    {comment.author.id ===
+                      user.id && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteComment(
+                            comment.id
+                          )
+                        }
+                        disabled={
+                          deletingCommentId ===
+                          comment.id
+                        }
+                      >
+                        {deletingCommentId ===
+                        comment.id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    )}
+                  </li>
+                )
+              )}
             </ul>
           )}
         </section>

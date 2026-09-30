@@ -78,3 +78,69 @@ export async function getPostById(token, postId) {
 
   return data;
 }
+
+export async function createComment(
+  token,
+  postId,
+  content
+) {
+  const response = await fetch(
+    `${API_URL}/posts/${postId}/comments`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+      body: JSON.stringify({
+        content,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message || "Failed to create comment."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data;
+}
+
+export async function deleteComment(
+  token,
+  commentId
+) {
+  const response = await fetch(
+    `${API_URL}/comments/${commentId}`,
+    {
+      method: "DELETE",
+
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const error = new Error(
+      data.message || "Failed to delete comment."
+    );
+
+    error.status = response.status;
+
+    throw error;
+  }
+
+  return data;
+}
