@@ -20,7 +20,7 @@ function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h1>OdinBook</h1>
+        <h1>ChatterGram</h1>
       </div>
 
       <nav className="sidebar-nav">

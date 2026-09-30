@@ -72,15 +72,23 @@ function Users() {
 
   return (
     <main>
-      <h1>People</h1>
+        
+<div className="page-header">
+  <div>
+    <h1>People</h1>
+    <p>Discover people and connect with them.</p>
+  </div>
 
-      <Link to="/">
-        Back to Home
-      </Link>
+  <div className="page-header-actions">
+    <Link to="/">
+      ← Back to Home
+    </Link>
 
-      <Link to="/follow-requests">
-        Follow Requests
-      </Link>
+    <Link to="/follow-requests">
+      Follow Requests
+    </Link>
+  </div>
+</div>
 
       {users.length === 0 ? (
         <p>No users found.</p>

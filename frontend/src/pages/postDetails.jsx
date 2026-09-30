@@ -209,23 +209,6 @@ function PostDetails() {
           {likeError && <p>{likeError}</p>}
         </section>
 
-        <section>
-          <h2>Likes</h2>
-
-          {post.likes.length === 0 ? (
-            <p>No likes yet.</p>
-          ) : (
-            <ul>
-              {post.likes.map((like) => (
-                <li key={like.id}>
-                  <Link to={`/users/${like.user.id}`}>
-                    @{like.user.username}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
 
         <section>
           <h2>Comments</h2>
